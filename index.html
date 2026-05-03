@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מדברים פר"ח שוטף</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #5808ed;
+    --navy: #073e80;
+    --lilac: #ca81f1;
+    --green: #40965b;
+    --gray-light: #f6f7f7;
+    --gray-mid: #a6a0a0;
+    --gray-dark: #656168;
+    --text: #1a1a2e;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Assistant', sans-serif;
+    background: var(--gray-light);
+    color: var(--text);
+    direction: rtl;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--navy);
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: var(--purple);
+    opacity: 0.18;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -40px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: var(--lilac);
+    opacity: 0.12;
+  }
+  .header-inner { position: relative; z-index: 1; }
+  header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.02em;
+  }
+  header p {
+    font-size: 1rem;
+    color: var(--lilac);
+    font-weight: 400;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--purple);
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+
+  .main { max-width: 980px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.75rem;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .tab-btn {
+    flex: 1;
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 0;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: none;
+    color: var(--gray-dark);
+    transition: all 0.18s;
+  }
+  .tab-btn.active {
+    background: var(--navy);
+    color: white;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    margin: 1.75rem 0 0.6rem;
+    padding-right: 2px;
+  }
+
+  .cat-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 1.25rem;
+  }
+  .cat-chip {
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 99px;
+    border: 1.5px solid #e0dfe8;
+    background: white;
+    color: var(--gray-dark);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cat-chip:hover { border-color: var(--purple); color: var(--purple); }
+  .cat-chip.active { background: var(--purple); color: white; border-color: var(--purple); }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+  }
+  .term-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    transition: all 0.15s;
+  }
+  .term-card:hover {
+    border-color: var(--purple);
+    box-shadow: 0 4px 14px rgba(88,8,237,0.1);
+    transform: translateY(-1px);
+  }
+  .term-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .term-tag {
+    font-size: 0.72rem;
+    color: var(--gray-mid);
+    font-weight: 400;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(7,62,128,0.35);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 92%;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    animation: popIn 0.18s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.94); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-cat-badge {
+    display: inline-block;
+    background: #ede8fd;
+    color: var(--purple);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+    letter-spacing: 0.03em;
+  }
+  .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  .modal-def { font-size: 1rem; color: var(--gray-dark); line-height: 1.75; font-weight: 400; }
+  .modal-close {
+    position: absolute;
+    top: 1rem; left: 1rem;
+    background: var(--gray-light);
+    border: none; border-radius: 8px;
+    width: 32px; height: 32px;
+    cursor: pointer; font-size: 1rem;
+    color: var(--gray-dark);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s;
+  }
+  .modal-close:hover { background: #e0dfe8; }
+  .modal-nav {
+    display: flex; gap: 8px; margin-top: 1.5rem;
+  }
+  .btn-nav {
+    flex: 1;
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.9rem; font-weight: 600;
+    padding: 9px 0;
+    border-radius: 10px;
+    border: 1.5px solid #e0dfe8;
+    background: white; color: var(--navy);
+    cursor: pointer; transition: all 0.13s;
+  }
+  .btn-nav:hover { background: var(--gray-light); border-color: var(--navy); }
+
+  /* Quiz */
+  .quiz-progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .progress-bar { flex: 1; height: 6px; background: #e0dfe8; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--purple); border-radius: 99px; transition: width 0.3s; }
+  .quiz-counter { font-size: 0.85rem; color: var(--gray-mid); font-weight: 500; white-space: nowrap; }
+
+  .quiz-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-top: 4px solid var(--purple);
+  }
+  .quiz-label { font-size: 0.72rem; font-weight: 700; color: var(--gray-mid); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .quiz-question { font-size: 1.05rem; font-weight: 500; color: var(--text); line-height: 1.65; }
+
+  .options-grid { display: grid; gap: 9px; margin-bottom: 1rem; }
+  .opt-btn {
+    text-align: right;
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.95rem; font-weight: 500;
+    padding: 13px 18px;
+    background: white;
+    border: 1.5px solid #e0dfe8;
+    border-radius: 12px;
+    cursor: pointer; color: var(--text);
+    line-height: 1.5;
+    transition: all 0.13s;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--purple); background: #f5f0ff; color: var(--purple); }
+  .opt-btn.correct { background: #eaf7ee; border-color: var(--green); color: #1e5c34; }
+  .opt-btn.wrong { background: #fdecea; border-color: #d9534f; color: #7a1f1d; }
+  .opt-btn:disabled { cursor: default; }
+
+  .feedback-box {
+    font-size: 0.9rem; font-weight: 500;
+    padding: 11px 16px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .feedback-box.correct { background: #eaf7ee; color: #1e5c34; border: 1.5px solid var(--green); }
+  .feedback-box.wrong { background: #fdecea; color: #7a1f1d; border: 1.5px solid #d9534f; }
+
+  .btn-primary {
+    font-family: 'Assistant', sans-serif;
+    background: var(--purple); color: white;
+    border: none; border-radius: 12px;
+    padding: 11px 22px; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: opacity 0.13s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-secondary {
+    font-family: 'Assistant', sans-serif;
+    background: white; color: var(--navy);
+    border: 1.5px solid #e0dfe8; border-radius: 12px;
+    padding: 11px 22px; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: all 0.13s;
+  }
+  .btn-secondary:hover { background: var(--gray-light); border-color: var(--navy); }
+
+  .score-card {
+    background: var(--navy);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    margin: 0.5rem 0 1.5rem;
+  }
+  .score-num { font-size: 3.5rem; font-weight: 700; color: white; }
+  .score-denom { font-size: 1.5rem; font-weight: 400; color: var(--lilac); }
+  .score-label { font-size: 0.9rem; color: var(--lilac); margin-top: 6px; }
+  .score-msg { font-size: 1.1rem; color: white; margin-top: 18px; font-weight: 600; }
+  .score-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  footer {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--gray-mid);
+    padding: 2rem 0 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge">כניסה לתפקיד</div>
+    <h1>מדברים פר"ח שוטף</h1>
+    <p>50 מושגים חיוניים לעבודה בארגון</p>
+  </div>
+</header>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('glossary')">📖 מילון מושגים</button>
+    <button class="tab-btn" onclick="showTab('quiz')">🎯 חידון אינטראקטיבי</button>
+  </div>
+
+  <div id="tab-glossary">
+    <div class="cat-filter" id="cat-filter-glossary"></div>
+    <div id="glossary-content"></div>
+  </div>
+
+  <div id="tab-quiz" style="display:none;">
+    <div class="cat-filter" id="cat-filter-quiz"></div>
+    <div id="quiz-content"></div>
+  </div>
+</div>
+
+<footer>פר"ח — פרויקט חונכות ישראל</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-cat-badge" id="modal-cat"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-def" id="modal-def"></div>
+    <div class="modal-nav">
+      <button class="btn-nav" onclick="navModal(-1)">→ הקודם</button>
+      <button class="btn-nav" onclick="navModal(1)">הבא ←</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TERMS = [
+  { term: 'אולם הברווז', def: 'אודיטרויום במכון דוידסון בויצמן שבו נעשים כנסים וטקסים ארגוניים.', cat: 'מקומות ומבנים' },
+  { term: 'מכון', def: 'קיצור של "מכון ויצמן" שבו יושבים המשרדים הראשיים של פר"ח (בתוך משרדי מכון דוידסון).', cat: 'מקומות ומבנים' },
+  { term: 'רוני עטר', def: 'מייסד ויוזם פר"ח בשנת 1974 שרתם את פרופ\' חיים הררי מסגל מכון ויצמן להתנדבות מרצים וסטודנטים עם ילדים בחונכות אישית.', cat: 'היסטוריה ואנשי מפתח' },
+  { term: 'פרופ\' חיים הררי', def: 'אחד משני מייסדי פר"ח (יחד עם רוני עטר) שהפך את פר"ח למלגה מוסדרת כיו"ר ות"ת במל"ג. כיהן ברציפות עד 2015 כיו"ר מועצת פר"ח.', cat: 'היסטוריה ואנשי מפתח' },
+  { term: 'אפשר לעזוב את פר"ח, אבל פר"ח לא עוזב אותך', def: 'משפט שחוזר על עצמו מכמעט כל עובד שעוזב את הארגון.', cat: 'היסטוריה ואנשי מפתח' },
+  { term: 'חונך', def: 'סטודנט/ית שמקבלים מלגה בפר"ח בתמורה לביצוע חונכות.', cat: 'תפקידים ודמויות' },
+  { term: 'מנה"צ', def: 'מנהל/ת צוות רכזיים בפר"ח בכל מנהלה.', cat: 'תפקידים ודמויות' },
+  { term: 'רכז/ת תומך', def: 'רכז/ת אשר מסייעים לצוות הרכזים ולמנה"צ בבירוקרטיה ובמעקב אחר משימות השנה.', cat: 'תפקידים ודמויות' },
+  { term: 'איש קשר', def: 'דמות מהפרויקט (לרוב בי"ס) שעובד עם רכז/ת פר"ח לאורך השנה לקידום הפעילות של פר"ח בפרויקט.', cat: 'תפקידים ודמויות' },
+  { term: 'חונכות אישית', def: 'קשר בינאישי בין סטודנט/ית לחניכ/ה — אחד על אחת לאורך שנת הפעילות בפר"ח.', cat: 'סוגי חונכות' },
+  { term: 'חונכות קבוצתית', def: 'פעילות של סטודנט/ית בפר"ח לבין קבוצה של חניכים (2 ומעלה) לאורך שנת הפעילות.', cat: 'סוגי חונכות' },
+  { term: 'חונכות וירטואלית', def: 'חונכות בין חונכ/ת לחניכ/ה המתקיים במרחב הוירטואלי באופן קבוע לאורך כל השנה.', cat: 'סוגי חונכות' },
+  { term: 'הצמדה', def: 'תהליך חיבור בין חונכ/ת לחניכ/ה לאחר בדיקה של צרכים ויכולות והתאמה בין שניהם.', cat: 'תהליכים ושלבים' },
+  { term: 'ביקור בית', def: 'ביקור בבית משפחת הילד/ה המועמדים לחונכות לפני החלטה סופית על התאמתם לפר"ח והצמדתו לחונכ/ת.', cat: 'תהליכים ושלבים' },
+  { term: 'אירוע סיום הצמדות', def: 'אירוע מנהלתי לציון סיום תקופת ההצמדות ועמידה ביעדי המנהלה בחלק הראשון של שנת פר"ח.', cat: 'תהליכים ושלבים' },
+  { term: 'יעד גיוס', def: 'מספר החונכים שעל המנהלה וכל צוות במנהלה נדרשים לגייס ולהצמיד בכל שנה.', cat: 'תהליכים ושלבים' },
+  { term: 'דחויים ובירורים', def: 'רשימות חונכים בסוף שנה שלא עמדו בדרישות לאורך השנה. דחויים לא יוכלו להמשיך לחנוך; בירורים — בהחלטת מנה"צ.', cat: 'תהליכים ושלבים' },
+  { term: 'מערכת סגולה', def: 'המשרד הוירטואלי של פר"ח — המערכת הממוחשבת שמלווה את העבודה עם כל המידע על החונכים והמלגות.', cat: 'מערכות וכלים' },
+  { term: 'מערכת למידה', def: 'מערכת ממוחשבת המכילה את כל חומרי ההדרכה לצוות פר"ח — כולל תכנים ולומדות לחונכים.', cat: 'מערכות וכלים' },
+  { term: 'לומדות', def: 'קורסים וירטואלים במערכת למידה עבור צוות פר"ח והחונכים להכשרה בתפקיד.', cat: 'מערכות וכלים' },
+  { term: 'טופס הרשמה', def: 'טופס מקוון המכיל את כל פרטי החונכ/ת שמולאו על ידו בהרשמה למלגה. בטופס מועדכת היסטוריית הפעילות ופרטי המלגה והסטטוסים.', cat: 'מערכות וכלים' },
+  { term: 'טופס א1', def: 'טופס וירטואלי הממולא ע"י בי"ס עבור הילדים המועמדים לחונכות.', cat: 'מערכות וכלים' },
+  { term: 'ליירק חונך', def: 'סימון סטודנט/ית במערכת הסגולה לשם ביצוע פעולות או חיפוש מידע עליו/ה.', cat: 'מערכות וכלים' },
+  { term: 'הנחש בסיכום ראיון', def: 'טופס לדירוג מועמדים לרכזות לפי פרמטרים קבועים מראש הקובעים את קבלתם לתפקיד.', cat: 'מערכות וכלים' },
+  { term: 'תיק פרויקט', def: 'תיק חפיפה במערכת הסגולה שכל רכז/ת ממלאים בסיום השנה לשימוש בעתיד.', cat: 'מערכות וכלים' },
+  { term: 'הסכם חונך', def: 'חוזה משפטי שכל סטודנט/ית חותמים עליו לפני תחילת הפעילות כדי להסדיר את הקשר בין פר"ח לסטודנטים.', cat: 'מסמכים ומנהלה' },
+  { term: 'דוח חודשי', def: 'דוח ביצוע (ימים ושעות) של מפגשי החונכות שממולא ע"י כל חונכ/ת, ומאושר ע"י הרכזים להגשה למלגות.', cat: 'מסמכים ומנהלה' },
+  { term: 'נספח הנדסאים', def: 'הצהרה עליה חותמים סטודנט/ית הנדסאי לפני הצמדה (בנוסף להסכם הרגיל) שללא תקצוב מה"ט לא יהיו זכאים למלגה.', cat: 'מסמכים ומנהלה' },
+  { term: 'תיק מצטיין', def: 'הגשת סטודנט/ית מצטיינים ע"י רכז/ת פר"ח לוועדה ארצית שבוחרת את 12 שהצטיינו בחונכות בשנה האחרונה. התיק כולל מכתב מהרכז, מהסטודנט וכו\'.', cat: 'מסמכים ומנהלה' },
+  { term: 'ישיבת מלגות', def: 'פגישה בין רכז/ת למנה"צ לאישור מלגות החונכים בפרויקטים של הרכז/ת.', cat: 'מסמכים ומנהלה' },
+  { term: 'מועד ערעורים', def: 'מועד תשלום מלגות מיוחד עבור חונכים שלא נכנסו למועד מלגות הקבוע.', cat: 'מסמכים ומנהלה' },
+  { term: 'קוד מלגה', def: 'הגדרה במערכת הסגולה בטופס של החונכ/ת, המגדיר את סכום וכמות השעות של החונכ/ת בשנה זו.', cat: 'מסמכים ומנהלה' },
+  { term: 'קוד מסגרת', def: 'שיוך חונך בטופס הרשמה במערכת הסגולה למאפייני חונכות ייחודיים (כגון חונכות לימודית, על"ה וכו\').', cat: 'מסמכים ומנהלה' },
+  { term: 'אייסף ועל"ה', def: 'קרנות מלגה שפועלות בשיתוף עם פר"ח ומקנות מלגה ופעילות מיוחדת עבור סטודנטים זכאים.', cat: 'תוכניות ומלגות' },
+  { term: 'אירתיקא', def: 'מלגות מטעם המל"ג לסטודנטים מהחברה הערבית שפועלים בפרויקטים של פר"ח.', cat: 'תוכניות ומלגות' },
+  { term: 'מה"ט', def: 'המכון הממשלתי להכשרה טכנולוגית — מתקצב את מלגות הסטודנטים ההנדסאים בפר"ח.', cat: 'תוכניות ומלגות' },
+  { term: 'פיס', def: 'שותפות מלגות בין מפעל הפיס, הרשות המקומית ופר"ח אשר ביחד מעניקים מלגה בסך 10,000 ₪ בשנה.', cat: 'תוכניות ומלגות' },
+  { term: 'מילgo!', def: 'תוכנית מלגות ייחודית של המל"ג שפר"ח נבחר להפעיל, מחלקת מלגות על בסיס סוציואקונומי או מוצא. התוכנית פועלת בתוך פר"ח ללא קשר למנהלות.', cat: 'תוכניות ומלגות' },
+  { term: 'רש"א', def: 'רשות שיקום האסיר — שיתוף פעולה בין רש"א לפר"ח בחונכויות לילדים/ות שאחד מהוריהם אסיר.', cat: 'תוכניות ומלגות' },
+  { term: 'רשות', def: 'עיריה או מועצה — רשות מקומית שעימה פר"ח עובד בשיתוף פעולה.', cat: 'תוכניות ומלגות' },
+  { term: 'נמ"ש', def: 'נפגשים ומשפיעים — תוכנית הדרכה לחונכי פר"ח השמה דגש על הדרכות קבוצתיות בנושאי חונכות והחברה הישראלית.', cat: 'תוכניות ומלגות' },
+  { term: 'סמינר רכזים', def: 'אירוע פתיחת שנה לרכזי פר"ח במנהלות, הדרכה על פתיחת השנה ותפקיד הרכזות לאורך 3 ימים.', cat: 'אירועים והכשרות' },
+  { term: 'מפגש למידה', def: 'מפגש הדרכה לרכזי פר"ח המתקיים בכל שבוע בזמן קבוע, ומטרתו להכשיר את הרכזים לעבודתם.', cat: 'אירועים והכשרות' },
+  { term: 'המתנה', def: 'סטטוס סטודנט/ית במערכת הסגולה עבור סטודנטים שאין עבורם תקן ונמצאים בהמתנה למלגה.', cat: 'סטטוסים במערכת' },
+  { term: 'מאושר הצמדה', def: 'סטטוס במערכת הסגולה לפני הצמדה סופית, לאחר יצירת קשר ו/או ראיון אישי.', cat: 'סטטוסים במערכת' },
+  { term: 'הפסקת חונכות', def: 'סטטוס במערכת הסגולה עבור חונכ/ת שהוצמד (חתם על הסכם) אך פרש לאחר שכבר החל בשעות ובחונכות.', cat: 'סטטוסים במערכת' },
+  { term: 'חונכות נפל', def: 'סטטוס במערכת הסגולה עבור חונכ/ת שהוצמד (חתם על הסכם) אך פרש בסמוך למועד תחילת החונכות ולא התחיל בפועל.', cat: 'סטטוסים במערכת' },
+  { term: 'מסלול', def: 'מסלול מלגה של סטודנטים במערכת הסגולה לפי — פר"ח או אירתיקא.', cat: 'סטטוסים במערכת' },
+  { term: 'פגישות מאושרות', def: 'שעות למלגה הניתנות לחונכ/ת ללא ביצוע בפועל מסיבות שונות — מילואים, אבל, היעדרויות של החניכ/ה.', cat: 'סטטוסים במערכת' },
+];
+
+const CATS = [...new Set(TERMS.map(t => t.cat))];
+let activeGlossaryCat = 'all';
+let activeQuizCat = 'all';
+let currentModalIdx = 0;
+let filteredModalTerms = TERMS;
+let quizState = { questions: [], current: 0, score: 0, answered: false, done: false };
+
+function buildCatFilter(containerId, onSelect, activeCat) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'cat-chip' + (activeCat === 'all' ? ' active' : '');
+  all.textContent = 'הכל';
+  all.onclick = () => onSelect('all');
+  el.appendChild(all);
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-chip' + (activeCat === c ? ' active' : '');
+    btn.textContent = c;
+    btn.onclick = () => onSelect(c);
+    el.appendChild(btn);
+  });
+}
+
+function renderGlossary() {
+  buildCatFilter('cat-filter-glossary', cat => { activeGlossaryCat = cat; renderGlossary(); }, activeGlossaryCat);
+  const filtered = activeGlossaryCat === 'all' ? TERMS : TERMS.filter(t => t.cat === activeGlossaryCat);
+  const grouped = {};
+  filtered.forEach(t => { (grouped[t.cat] = grouped[t.cat] || []).push(t); });
+  const el = document.getElementById('glossary-content');
+  el.innerHTML = '';
+  Object.entries(grouped).forEach(([cat, terms]) => {
+    const header = document.createElement('div');
+    header.className = 'section-label';
+    header.textContent = cat;
+    el.appendChild(header);
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+    terms.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'term-card';
+      card.innerHTML = `<div class="term-name">${t.term}</div><div class="term-tag">${t.cat}</div>`;
+      card.onclick = () => {
+        filteredModalTerms = filtered;
+        currentModalIdx = filtered.indexOf(t);
+        showModal();
+      };
+      grid.appendChild(card);
+    });
+    el.appendChild(grid);
+  });
+}
+
+function showModal() {
+  const t = filteredModalTerms[currentModalIdx];
+  document.getElementById('modal-cat').textContent = t.cat;
+  document.getElementById('modal-title').textContent = t.term;
+  document.getElementById('modal-def').textContent = t.def;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+function navModal(dir) {
+  currentModalIdx = (currentModalIdx + dir + filteredModalTerms.length) % filteredModalTerms.length;
+  showModal();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateQuiz(cat) {
+  const pool = cat === 'all' ? TERMS : TERMS.filter(t => t.cat === cat);
+  const questions = shuffle(pool).slice(0, Math.min(10, pool.length)).map(t => {
+    const wrong = shuffle(TERMS.filter(x => x.term !== t.term)).slice(0, 3).map(x => x.term);
+    return { def: t.def, answer: t.term, options: shuffle([t.term, ...wrong]), cat: t.cat };
+  });
+  quizState = { questions, current: 0, score: 0, answered: false, done: false };
+  renderQuiz();
+}
+
+function renderQuiz() {
+  buildCatFilter('cat-filter-quiz', cat => { activeQuizCat = cat; generateQuiz(cat); }, activeQuizCat);
+  const el = document.getElementById('quiz-content');
+  if (quizState.done) {
+    const pct = Math.round((quizState.score / quizState.questions.length) * 100);
+    const msg = pct >= 80 ? 'כל הכבוד! שולטת במושגים!' : pct >= 50 ? 'לא רע! כדאי לחזור על החומר.' : 'המשיכי להתאמן, תצליחי!';
+    el.innerHTML = `
+      <div class="score-card">
+        <div class="score-num">${quizState.score}<span class="score-denom">/${quizState.questions.length}</span></div>
+        <div class="score-label">תשובות נכונות</div>
+        <div class="score-msg">${msg}</div>
+      </div>
+      <div class="score-actions">
+        <button class="btn-primary" onclick="generateQuiz(activeQuizCat)">שוב מהתחלה</button>
+        <button class="btn-secondary" onclick="showTab('glossary')">חזרה למילון</button>
+      </div>`;
+    return;
+  }
+  const q = quizState.questions[quizState.current];
+  const pct = (quizState.current / quizState.questions.length) * 100;
+  const optsHtml = q.options.map(opt =>
+    `<button class="opt-btn" onclick="answer(this,'${opt.replace(/'/g,"&#39;").replace(/"/g,"&quot;")}')">${opt}</button>`
+  ).join('');
+  el.innerHTML = `
+    <div class="quiz-progress-row">
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <span class="quiz-counter">${quizState.current + 1} / ${quizState.questions.length}</span>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-label">מהו המושג שמתאים להגדרה הבאה?</div>
+      <div class="quiz-question">${q.def}</div>
+    </div>
+    <div class="options-grid">${optsHtml}</div>
+    <div id="feedback" style="display:none;"></div>
+    <button id="next-btn" class="btn-primary" style="display:none;margin-top:4px;" onclick="nextQuestion()">השאלה הבאה ←</button>`;
+}
+
+function answer(btn, selected) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+  const q = quizState.questions[quizState.current];
+  const correct = selected === q.answer;
+  if (correct) quizState.score++;
+  document.querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) b.classList.add('correct');
+    else if (b === btn && !correct) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = 'feedback-box ' + (correct ? 'correct' : 'wrong');
+  fb.textContent = correct ? '✓ נכון!' : `✗ לא בדיוק. התשובה הנכונה היא: ${q.answer}`;
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+  quizState.current++;
+  quizState.answered = false;
+  if (quizState.current >= quizState.questions.length) quizState.done = true;
+  renderQuiz();
+}
+
+function showTab(tab) {
+  document.getElementById('tab-glossary').style.display = tab === 'glossary' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display = tab === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'glossary') || (i === 1 && tab === 'quiz'));
+  });
+  if (tab === 'quiz' && quizState.questions.length === 0) generateQuiz('all');
+}
+
+renderGlossary();
+</script>
+</body>
+</html>
